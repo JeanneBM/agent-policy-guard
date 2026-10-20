@@ -1,0 +1,22 @@
+id: k8s-image-repair
+version: "0.1.0"
+rules:
+  - id: production-review
+    decision: require_human
+    reason: Production changes require a separate approval workflow
+    conditions:
+      - {field: action.type, op: eq, value: k8s.image_update}
+      - {field: context.environment, op: eq, value: production}
+  - id: repair-known-lab-image
+    decision: allow
+    reason: Verified image repair for the designated lab workload
+    conditions:
+      - {field: action.type, op: eq, value: k8s.image_update}
+      - {field: action.target, op: eq, value: "test-app/deployment/test-app"}
+      - {field: action.parameters.container, op: eq, value: test-app}
+      - {field: action.parameters.current_image, op: eq, value: "lab.azurecr.io/tset-app:1.4.2"}
+      - {field: action.parameters.image, op: eq, value: "lab.azurecr.io/test-app:1.4.2"}
+      - {field: context.actor, op: eq, value: diagnostic-agent}
+      - {field: context.environment, op: eq, value: lab}
+      - {field: context.facts.image_exists, op: eq, value: true}
+      - {field: context.facts.observed_image, op: eq, value: "lab.azurecr.io/tset-app:1.4.2"}
