@@ -10,10 +10,19 @@ is required.
 
 ## Status
 
-Early PoC. Includes offline Kubernetes image-repair and CI patch-proposal examples,
-plus a dependency-free callable suitable for a LangGraph node. Existing portfolio
-repositories have **not** yet been migrated to this library. No live Kubernetes
-adapter, GitHub PR writer, Entra integration or human approval service is included.
+PoC. Includes offline Kubernetes image-repair and CI patch-proposal examples,
+plus a dependency-free callable suitable for a LangGraph node.
+
+**First consumer:** [langgraph-ci-repair-agent](https://github.com/JeanneBM/langgraph-ci-repair-agent)
+(v1.0) pins this library to commit `4ec36af`. A YAML policy there decides
+`ci.accept_proposal` for every model proposal, and `ci.export_patch` runs only through
+a `GuardedExecutor`. Facts come from the host: snapshot, repair rules, the isolated-run
+result bound to a snapshot hash, and the human approval. Each decision is written to a
+metadata-only audit file. That repository's `Real CI logs` workflow exercises it on
+real GitHub Actions logs.
+
+Not included: a live Kubernetes adapter, a GitHub PR writer, Entra integration and a
+human approval service.
 
 ## Quick start
 
@@ -126,8 +135,10 @@ automatic rollback or post-execution verification is claimed.
 ## Integration roadmap
 
 1. Bind a least-privilege AKS executor to the actual lab resource and verify rollout.
-2. Bind a CI proposal executor to a reviewed patch, repository and base commit.
-3. Exercise both integrations in their existing repositories and retain evidence.
+2. ~~Bind a CI proposal executor to a reviewed patch.~~ Done in langgraph-ci-repair-agent
+   for local patch export; binding to a repository and base commit comes with PR publishing.
+3. Exercise the AKS integration in its repository and retain evidence (the CI one is
+   exercised by langgraph-ci-repair-agent's `Real CI logs` workflow).
 4. Add narrowly scoped approvals and idempotency only when the workflow needs them.
 
 RAG citation validation is separate from action authorization; semantic grounding
